@@ -1,0 +1,5 @@
+RECREATE Webapigroup test__c (
+   label(),
+   active(true),
+   description('Test')
+);

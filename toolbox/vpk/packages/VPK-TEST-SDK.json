@@ -1,0 +1,16 @@
+{
+  "name": "VPK-TEST-SDK",
+  "description": "Test SDK with related components",
+  "summary": "Test SDK",
+  "packageType": "MIGRATION",
+  "components" : [
+    {
+      "step": "00010",
+      "path": "/src/main/resources/components/Webapigroup.test__c.mdl"
+    }
+  ],
+  "javaSdk": {
+    "path": "/src/main/java/com/veeva/vault/custom/test",
+    "deploymentOption": "INCREMENTAL"
+  }
+}

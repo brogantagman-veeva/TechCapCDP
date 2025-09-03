@@ -1,0 +1,6 @@
+{
+  "configPath" : "/toolbox/config",
+  "logsPath" : "/toolbox/logs",
+  "mdlPath" : "/toolbox/mdl",
+  "vpkPath" : "/toolbox/vpk"
+}
