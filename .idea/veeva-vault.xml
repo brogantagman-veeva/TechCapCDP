@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="com.veeva.vault.toolbox.intellij.settings.VaultSettings">
+    <option name="vaults">
+      <map>
+        <entry key="eu-techservices-tech-capstone-team-01.veevavault.com">
+          <value>
+            <Vault>
+              <option name="active" value="true" />
+              <option name="authenticationType" value="SESSION_ID" />
+              <option name="saveSecret" value="true" />
+              <option name="vaultDNS" value="eu-techservices-tech-capstone-team-01.veevavault.com" />
+            </Vault>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>

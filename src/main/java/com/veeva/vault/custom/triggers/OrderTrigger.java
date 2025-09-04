@@ -15,13 +15,14 @@ import java.util.List;
 import java.util.Map;
 
 import com.veeva.vault.sdk.api.data.Record;
+import com.veeva.vault.sdk.api.document.DocumentService;
 import com.veeva.vault.sdk.api.job.JobCompletionContext;
 //import com.veeva.vault.sdk.api.job.JobInitiationContext;
 import com.veeva.vault.sdk.api.job.JobLogger;
 import com.veeva.vault.sdk.api.query.QueryService;
 //import com.veeva.vault.sdk.api.workflow.WorkflowContext;
 
-s
+
 @RecordTriggerInfo(object = "order__c", events = {RecordEvent.AFTER_INSERT}, order = TriggerOrder.NUMBER_2)
 public class OrderTrigger implements RecordTrigger {
 
@@ -71,19 +72,33 @@ public class OrderTrigger implements RecordTrigger {
             }
 
             // 6. Save the list of new Shipment records to the database in a single transaction (bulkification).
-            if (!shipmentsToCreate.isEmpty()) {
-                recordService.saveRecords(shipmentsToCreate)
-                        .onSuccess(batchOperationSuccess -> {
-                            logService.info("Successfully created {} shipment records.", batchOperationSuccess.getSuccesses().size());
-                        })
-                        .onError(batchOperationError -> {
-                            logService.error("Failed to create shipment records. Error: {}", batchOperationError.getMessage());
-                            batchOperationError.getError().getCauses().forEach(cause ->
-                                    logService.error("...record failed with message: {}", cause.getMessage())
-                            );
-                        })
-                        .execute();
-            }
+
+            // Build the request without the unique field, as we are only inserting.
+            RecordBatchSaveRequest request = recordService.newRecordBatchSaveRequestBuilder()
+                    .withRecords(shipmentsToCreate)
+                    .build();
+
+            // Execute the save operation
+            recordService.batchSaveRecords(request)
+                    .onErrors(batchOperationErrors -> {
+                        // This runs if any record fails to save. We'll grab the first error and stop everything.
+                        batchOperationErrors.stream().findFirst().ifPresent(error -> {
+                            String errMsg = error.getError().getMessage();
+                            int errPosition = error.getInputPosition();
+
+                            // Get the tracking number from the failing record to make the error message helpful.
+                            String trackingNumber = shipmentsToCreate.get(errPosition).getValue("tracking_number__c", ValueType.STRING);
+
+                            // Throwing a RollbackException stops the entire transaction.
+                            throw new RollbackException("OPERATION_NOT_ALLOWED",
+                                    "Unable to create Shipment with Tracking Number: " + trackingNumber + ". Reason: " + errMsg);
+                        });
+                    })
+                    .onSuccesses(batchOperationSuccesses -> {
+                        // This is a good place to log that the operation was successful.
+                        logService.info("Successfully created {} new Shipment records.", batchOperationSuccesses.size());
+                    })
+                    .execute();
         }
 
 
